@@ -1,6 +1,6 @@
 # Mellow
 Mellow helps you give one thing your attention, then take a real break. Start a 25-minute focus session, keep a small list for today, and watch your progress grow — all in a quiet, responsive interface.
-#
+
 
 # What’s inside
 •Three gentle timers: 25-minute focus, 5-minute short break, and 15-minute long break.
