@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111310">
+  <meta name="description" content="A calm, simple focus timer and daily task list.">
+  <title>Mellow — make room for focus</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111310;
+      --panel: #191c18;
+      --line: #2a2e28;
+      --text: #f1f0e9;
+      --muted: #92978d;
+      --lime: #c7e878;
+      --soft-lime: #28331e;
+      --mono: "SFMono-Regular", Consolas, monospace;
+      --sans: "Inter", "Segoe UI", Arial, sans-serif;
+      --serif: Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 52% 0%, #20271a 0, transparent 40rem),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .app { max-width: 1120px; margin: auto; padding: 30px 28px 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; letter-spacing: -1px; }
+    .brand-mark {
+      width: 25px; height: 25px; display: grid; place-items: center;
+      border: 1px solid #607b39; border-radius: 50%;
+      color: var(--lime); background: #20291a;
+    }
+    .brand-dot { color: var(--lime); }
+    .top-right { display: flex; align-items: center; gap: 10px; }
+    .session-pill, .icon-button {
+      border: 1px solid #30352c; background: #171a16; color: var(--muted);
+      border-radius: 24px; padding: 9px 13px;
+    }
+    .session-pill { font-size: 12px; }
+    .session-pill strong { color: var(--text); font-family: var(--mono); margin: 0 4px; }
+    .icon-button { width: 38px; height: 38px; padding: 0; cursor: pointer; font-size: 17px; }
+    .icon-button:hover { color: var(--lime); border-color: var(--lime); }
+
+    .intro { margin: 52px 0 25px; }
+    .eyebrow { color: var(--muted); font: 10px var(--mono); letter-spacing: 1.6px; }
+    h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 500; letter-spacing: -1.5px; margin: 9px 0 0; }
+    h1 em { color: var(--lime); font-family: var(--serif); font-weight: 500; }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); gap: 18px; }
+    .card { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+    .timer-card { padding: 23px 25px 16px; display: flex; flex-direction: column; align-items: center; min-height: 575px; }
+    .timer-heading { display: flex; align-items: flex-start; justify-content: space-between; width: 100%; }
+    .subtext { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+    .reset {
+      border: 1px solid #34392f; background: transparent; border-radius: 50%;
+      height: 35px; width: 35px; cursor: pointer; color: var(--muted); font-size: 18px;
+    }
+    .reset:hover { color: var(--lime); border-color: var(--lime); }
+
+    .modes { display: flex; gap: 4px; padding: 4px; margin-top: 25px; background: #111410; border: 1px solid #252921; border-radius: 9px; }
+    .mode {
+      border: 0; border-radius: 6px; padding: 9px 11px; background: transparent;
+      color: #92978d; cursor: pointer; font-size: 11px;
+    }
+    .mode small { color: #697062; font: 9px var(--mono); margin-left: 4px; }
+    .mode.active { color: var(--lime); background: #272c22; }
+    .mode.active small { color: #a8ba7f; }
+
+    .clock { width: min(72vw, 285px); aspect-ratio: 1; position: relative; display: grid; place-items: center; margin: 22px auto 7px; }
+    .clock svg { position: absolute; width: 100%; height: 100%; transform: rotate(-90deg); }
+    .clock circle { fill: none; stroke-width: 2; }
+    #track { stroke: #2b3027; }
+    #progress-ring {
+      stroke: var(--lime); stroke-linecap: round;
+      stroke-dasharray: 804.25; stroke-dashoffset: 0;
+      transition: stroke-dashoffset .6s linear;
+    }
+    .clock-face { text-align: center; }
+    #time { font: 500 clamp(49px, 7vw, 68px) var(--mono); letter-spacing: -5px; font-variant-numeric: tabular-nums; }
+    #status { margin-top: 13px; color: #929988; font: 9px var(--mono); letter-spacing: 1.7px; }
+
+    .controls { display: flex; align-items: center; gap: 10px; margin: 5px 0 21px; }
+    #start {
+      min-width: 165px; height: 45px; display: flex; justify-content: center; align-items: center; gap: 10px;
+      border: 0; border-radius: 7px; background: var(--lime); color: #1d2415;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    #start:hover { background: #d2ef91; }
+    #skip {
+      width: 41px; height: 41px; border: 1px solid #383d33; border-radius: 7px;
+      background: #20231e; color: #a5aa9d; cursor: pointer; font-size: 17px;
+    }
+    #skip:hover { color: var(--lime); border-color: var(--lime); }
+    .timer-footer {
+      display: flex; justify-content: space-between; gap: 10px; width: 100%;
+      margin-top: auto; border-top: 1px solid var(--line); padding-top: 14px;
+      color: #777d72; font-size: 10px;
+    }
+    #round { font: 9px var(--mono); letter-spacing: .6px; }
+
+    .right-column { display: grid; gap: 14px; align-content: start; }
+    .tasks-card { padding: 21px 20px 16px; min-height: 300px; }
+    .card-heading { display: flex; justify-content: space-between; align-items: end; }
+    h2 { margin: 6px 0 0; font-size: 21px; font-weight: 500; letter-spacing: -.6px; }
+    #task-count { color: var(--muted); font: 10px var(--mono); }
+    .task-form { display: flex; gap: 7px; margin: 19px 0 11px; }
+    .task-form input {
+      flex: 1; min-width: 0; height: 40px; padding: 0 12px;
+      border: 1px solid #30342d; border-radius: 6px; outline: none;
+      background: #121410; color: var(--text); font-size: 12px;
+    }
+    .task-form input:focus { border-color: #758849; }
+    .task-form input::placeholder { color: #656b60; }
+    .task-form button {
+      width: 40px; border: 1px solid #687f40; border-radius: 6px;
+      background: var(--soft-lime); color: var(--lime); cursor: pointer; font-size: 22px;
+    }
+    #task-list { list-style: none; padding: 0; margin: 0; }
+    .task-row { display: flex; align-items: center; gap: 10px; min-height: 39px; border-bottom: 1px solid #272b25; }
+    .task-row input { accent-color: var(--lime); }
+    .task-text { flex: 1; overflow-wrap: anywhere; color: #d4d6cd; font-size: 12px; }
+    .task-row.done .task-text { color: #73796f; text-decoration: line-through; }
+    .delete-task { border: 0; background: none; color: #92978d; font-size: 18px; cursor: pointer; }
+    .delete-task:hover { color: #f1a08f; }
+    #empty { padding: 23px 5px 18px; text-align: center; color: #81877b; font-size: 11px; line-height: 1.6; }
+    #empty span { display: block; color: var(--lime); font-size: 18px; margin-bottom: 5px; }
+    #clear {
+      border: 0; background: none; color: #a3aa96; cursor: pointer; font-size: 11px; padding: 12px 0 0;
+    }
+    #clear:hover { color: var(--lime); }
+
+    .reminder {
+      display: flex; align-items: center; gap: 13px; padding: 17px 18px;
+      border: 1px solid #373c2a; border-radius: 12px;
+      background: linear-gradient(115deg, #22281c, #1b2019);
+    }
+    .reminder-icon {
+      display: grid; place-items: center; width: 35px; height: 35px; flex: none;
+      border-radius: 50%; background: #303b25; color: var(--lime);
+    }
+    .reminder p { margin: 7px 0 0; font: 15px/1.45 var(--serif); color: #d8ddca; }
+    .reminder strong { color: var(--lime); font-style: italic; font-weight: 500; }
+
+    .progress-card { padding: 17px 19px; }
+    .progress-top { display: flex; align-items: center; justify-content: space-between; }
+    .progress-top strong { color: var(--lime); font: 12px var(--mono); }
+    .progress-title { margin-top: 6px; color: #dedfd7; font-size: 13px; }
+    .bar { height: 5px; margin: 15px 0 9px; background: #2c3129; border-radius: 8px; overflow: hidden; }
+    #bar-fill { width: 0; height: 100%; background: var(--lime); transition: width .4s; }
+    .progress-bottom { display: flex; justify-content: space-between; color: #7f8679; font-size: 10px; }
+
+    footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 21px; color: #666c62; font-size: 10px; }
+    #toast {
+      position: fixed; z-index: 5; bottom: 24px; left: 50%;
+      transform: translate(-50%, 10px); opacity: 0; pointer-events: none;
+      padding: 11px 16px; border: 1px solid #3a4430; border-radius: 8px;
+      background: #20261b; color: #d9e7bd; font-size: 12px; transition: .2s;
+    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 760px) {
+      .app { padding: 22px 16px 18px; }
+      .intro { margin: 38px 0 20px; }
+      .layout { grid-template-columns: 1fr; }
+      .timer-card { min-height: 540px; padding: 20px 17px 15px; }
+      .clock { width: min(72vw, 280px); }
+      .right-column { gap: 12px; }
+      footer { flex-direction: column; }
+    }
+    @media (max-width: 390px) {
+      .app { padding-left: 12px; padding-right: 12px; }
+      .mode { padding: 8px 7px; font-size: 10px; }
+      .mode small { display: block; margin: 3px 0 0; }
+      .session-pill { font-size: 10px; padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand"><span class="brand-mark">✳</span><span>mellow<span class="brand-dot">.</span></span></div>
+      <div class="top-right">
+        <div class="session-pill">✳ <strong id="sessions">0</strong> sessions</div>
+        <button class="icon-button" id="sound" type="button" title="Sound off" aria-label="Turn sound on">♪</button>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div class="eyebrow" id="today-label">A LITTLE SPACE TO THINK</div>
+      <h1>Make room for <em>focus.</em></h1>
+    </section>
+
+    <div class="layout">
+      <section class="card timer-card" aria-label="Focus timer">
+        <div class="timer-heading">
+          <div>
+            <div class="eyebrow">YOUR FOCUS ROOM</div>
+            <p class="subtext">One thing at a time. You’ve got this.</p>
+          </div>
+          <button class="reset" id="reset" type="button" title="Reset timer" aria-label="Reset timer">↻</button>
+        </div>
+
+        <div class="modes" role="tablist" aria-label="Timer mode">
+          <button class="mode active" data-mode="focus" role="tab" aria-selected="true">Focus <small>25 min</small></button>
+          <button class="mode" data-mode="short" role="tab" aria-selected="false">Short break <small>5 min</small></button>
+          <button class="mode" data-mode="long" role="tab" aria-selected="false">Long break <small>15 min</small></button>
+        </div>
+
+        <div class="clock">
+          <svg viewBox="0 0 280 280" aria-hidden="true">
+            <circle id="track" cx="140" cy="140" r="128"></circle>
+            <circle id="progress-ring" cx="140" cy="140" r="128"></circle>
+          </svg>
+          <div class="clock-face">
+            <div id="time" role="timer">25:00</div>
+            <div id="status">READY WHEN YOU ARE</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="start" type="button"><span id="play">▶</span><span id="start-label">Start focus</span></button>
+          <button id="skip" type="button" aria-label="Skip to next timer">↗</button>
+        </div>
+
+        <div class="timer-footer">
+          <span>✳ &nbsp;A gentle nudge, not a race.</span>
+          <span id="round">ROUND 1 OF 4</span>
+        </div>
+      </section>
+
+      <aside class="right-column">
+        <section class="card tasks-card">
+          <div class="card-heading">
+            <div><div class="eyebrow">CLEAR YOUR MIND</div><h2>Today’s list<span class="brand-dot">.</span></h2></div>
+            <span id="task-count">0 / 0</span>
+          </div>
+          <form class="task-form" id="task-form">
+            <label for="task-input" hidden>Add a task</label>
+            <input id="task-input" maxlength="90" placeholder="What’s on your mind?" autocomplete="off">
+            <button type="submit" aria-label="Add task">+</button>
+          </form>
+          <ul id="task-list"></ul>
+          <div id="empty"><span>✳</span>Your list is a blank page.<br>Add one small thing to begin.</div>
+          <button id="clear" type="button" hidden>Clear completed</button>
+        </section>
+
+        <section class="reminder">
+          <span class="reminder-icon">✦</span>
+          <div><div class="eyebrow">A KIND REMINDER</div><p>Rest is part of the work.<br><strong>Take your breaks.</strong></p></div>
+        </section>
+
+        <section class="card progress-card">
+          <div class="progress-top">
+            <div><div class="eyebrow">TODAY’S PROGRESS</div><div class="progress-title">Little by little</div></div>
+            <strong id="percent">0%</strong>
+          </div>
+          <div class="bar"><div id="bar-fill"></div></div>
+          <div class="progress-bottom"><span id="caption">Your first session is waiting.</span><span id="minutes">0 min</span></div>
+        </section>
+      </aside>
+    </div>
+
+    <footer>
+      <span>Made for the moments you show up.</span>
+      <span>Your data stays in this browser.</span>
+    </footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const durations = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
+      const key = "mellow-focus-single-file";
+      const today = new Date().toLocaleDateString("en-CA");
+      const $ = (selector) => document.querySelector(selector);
+
+      function freshData() {
+        return { date: today, tasks: [], sessions: 0, minutes: 0, round: 1, sound: false };
+      }
+      function loadData() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(key));
+          if (!saved || saved.date !== today) return freshData();
+          return {
+            ...freshData(),
+            ...saved,
+            tasks: Array.isArray(saved.tasks) ? saved.tasks : [],
+            round: Math.min(4, Math.max(1, Number(saved.round) || 1))
+          };
+        } catch { return freshData(); }
+      }
+
+      const data = loadData();
+      let mode = "focus";
+      let remaining = durations.focus;
+      let interval = null;
+      let toastTimer;
+
+      function save() {
+        try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+      }
+      function formatTime(seconds) {
+        return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+      }
+      function renderTimer() {
+        $("#time").textContent = formatTime(remaining);
+        const circumference = 2 * Math.PI * 128;
+        $("#progress-ring").style.strokeDasharray = circumference;
+        $("#progress-ring").style.strokeDashoffset = circumference * (1 - remaining / durations[mode]);
+        document.title = interval ? `${formatTime(remaining)} — Mellow` : "Mellow — make room for focus";
+      }
+      function updateButton() {
+        const running = Boolean(interval);
+        $("#start-label").textContent = running ? "Pause focus" : mode === "focus" ? "Start focus" : "Start break";
+        $("#play").textContent = running ? "Ⅱ" : "▶";
+        $("#status").textContent = running
+          ? mode === "focus" ? "YOU’RE IN YOUR FOCUS" : "TAKE A BREATH"
+          : mode === "focus" ? "READY WHEN YOU ARE" : "A MOMENT TO RESET";
+      }
+      function pause() {
+        clearInterval(interval);
+        interval = null;
+        updateButton();
+      }
+      function setMode(next) {
+        pause();
+        mode = next;
+        remaining = durations[mode];
+        document.querySelectorAll(".mode").forEach((button) => {
+          const selected = button.dataset.mode === mode;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-selected", String(selected));
+        });
+        renderTimer();
+        updateButton();
+      }
+      function showToast(message) {
+        const toast = $("#toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
+      }
+      function chime() {
+        if (!data.sound) return;
+        try {
+          const Audio = window.AudioContext || window.webkitAudioContext;
+          if (!Audio) return;
+          const context = new Audio();
+          [523, 659].forEach((frequency, index) => {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            const startAt = context.currentTime + index * 0.16;
+            oscillator.frequency.value = frequency;
+            oscillator.type = "sine";
+            gain.gain.setValueAtTime(0.001, startAt);
+            gain.gain.exponentialRampToValueAtTime(0.07, startAt + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.42);
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start(startAt);
+            oscillator.stop(startAt + 0.45);
+          });
+          setTimeout(() => context.close(), 1200);
+        } catch {}
+      }
+      function renderStats() {
+        $("#sessions").textContent = data.sessions;
+        $("#minutes").textContent = `${data.minutes} min`;
+        const percent = Math.min(100, Math.round(data.sessions / 4 * 100));
+        $("#percent").textContent = `${percent}%`;
+        $("#bar-fill").style.width = `${percent}%`;
+        $("#round").textContent = `ROUND ${data.round} OF 4`;
+        $("#caption").textContent = data.sessions === 0
+          ? "Your first session is waiting."
+          : data.sessions >= 4
+            ? "You made space for your focus today."
+            : `${4 - data.sessions} more ${data.sessions === 3 ? "session" : "sessions"} to your daily goal.`;
+      }
+      function renderTasks() {
+        const list = $("#task-list");
+        list.replaceChildren();
+        data.tasks.forEach((task) => {
+          const row = document.createElement("li");
+          row.className = `task-row${task.done ? " done" : ""}`;
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = task.done;
+          checkbox.setAttribute("aria-label", `Complete task: ${task.text}`);
+          checkbox.addEventListener("change", () => {
+            task.done = checkbox.checked;
+            save();
+            renderTasks();
+          });
+
+          const text = document.createElement("span");
+          text.className = "task-text";
+          text.textContent = task.text;
+
+          const remove = document.createElement("button");
+          remove.className = "delete-task";
+          remove.type = "button";
+          remove.textContent = "×";
+          remove.setAttribute("aria-label", `Delete task: ${task.text}`);
+          remove.addEventListener("click", () => {
+            data.tasks = data.tasks.filter((item) => item.id !== task.id);
+            save();
+            renderTasks();
+          });
+
+          row.append(checkbox, text, remove);
+          list.append(row);
+        });
+
+        const completed = data.tasks.filter((task) => task.done).length;
+        $("#task-count").textContent = `${completed} / ${data.tasks.length}`;
+        $("#empty").hidden = data.tasks.length > 0;
+        $("#clear").hidden = completed === 0;
+      }
+      function finishTimer() {
+        pause();
+        remaining = 0;
+        renderTimer();
+        chime();
+
+        if (mode === "focus") {
+          data.sessions += 1;
+          data.minutes += 25;
+          const finishedRound = data.round;
+          const next = finishedRound === 4 ? "long" : "short";
+          data.round = finishedRound === 4 ? 1 : finishedRound + 1;
+          save();
+          renderStats();
+          showToast(finishedRound ==
