@@ -1,7 +1,7 @@
 # Mellow
 Mellow helps you give one thing your attention, then take a real break. Start a 25-minute focus session, keep a small list for today, and watch your progress grow — all in a quiet, responsive interface.
 
-What’s inside
+#What’s inside
 •Three gentle timers: 25-minute focus, 5-minute short break, and 15-minute long break.
 •A simple daily rhythm: Four focus rounds make up the suggested daily goal; breaks are offered between rounds.
 •Today’s task list: Add, complete, and remove tasks without losing your train of thought.
@@ -10,14 +10,14 @@ What’s inside
 •Private by design: Tasks and today’s progress stay in your browser’s local storage.
 •Responsive and lightweight: Works on desktop and mobile with no build step or third-party JavaScript.
 
-Get started
+#Get started
 Run it locally1.Download or clone this repository.
 2.Open index.html in a modern browser.
 3.Press Start focus. That’s it.To serve it locally instead, 
 run:python3 -m http.server 8000
 Then visit http://localhost:8000.
 
-Publish with GitHub Pages
+#Publish with GitHub Pages
 1.Create a GitHub repository and add these files.
 2.Open Settings → Pages.
 3.Under Build and deployment, select Deploy from a branch.
@@ -25,7 +25,7 @@ Publish with GitHub Pages
 
 GitHub Pages will publish the app at your repository’s Pages URL. No build command or framework configuration is required.
 
-Project structure
+#Project structure
 mellow-focus/
 ├── assets/
 │   ├── cover.svg       # Repository cover artwork
@@ -39,19 +39,19 @@ mellow-focus/
 └── README.md
 
 
-Privacy and browser support
+#Privacy and browser support
 Mellow does not send data to a server. Tasks, session count, focus minutes, and sound preference are stored in localStorage on the device and browser where you use the app. The daily list and counters reset when the local calendar date changes. Clearing browser storage also clears Mellow’s saved data.The app uses modern browser features including localStorage, SVG, and the Web Audio API for the optional chime. If audio is unavailable or blocked, the timer still works normally. The optional typefaces load from Google Fonts; system fallbacks are included.
 
 
-Customize
+#Customize
 
 Change the timer lengths in the DURATIONS constant at the top of app.js. The main colors and type stacks are CSS custom properties at the top of styles.css.
 
-Contributing
+#Contributing
 
 Issues and pull requests are welcome. For larger changes, open an issue first so we can keep the app intentionally small and focused.
 
-**License**
+#License
 Mellow is released under the MIT License.
 
 
