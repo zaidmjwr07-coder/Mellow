@@ -44,11 +44,15 @@ Mellow does not send data to a server. Tasks, session count, focus minutes, and 
 
 
 Customize
+
 Change the timer lengths in the DURATIONS constant at the top of app.js. The main colors and type stacks are CSS custom properties at the top of styles.css.
 
-ContributingIssues and pull requests are welcome. For larger changes, open an issue first so we can keep the app intentionally small and focused.
+Contributing
+
+Issues and pull requests are welcome. For larger changes, open an issue first so we can keep the app intentionally small and focused.
 
 License
+
 Mellow is released under the MIT License.
 
 
