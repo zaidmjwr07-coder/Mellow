@@ -10,7 +10,7 @@ Mellow helps you give one thing your attention, then take a real break. Start a 
 •Private by design: Tasks and today’s progress stay in your browser’s local storage.
 •Responsive and lightweight: Works on desktop and mobile with no build step or third-party JavaScript.
 
-# Get started
+#Get started
 Run it locally1.Download or clone this repository.
 2.Open index.html in a modern browser.
 3.Press Start focus. That’s it.To serve it locally instead, 
