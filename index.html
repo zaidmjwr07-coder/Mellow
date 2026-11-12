@@ -106,4 +106,308 @@ html[data-theme="light"] .cancel-button{color:#68705f;border-color:#dfe3d7}
       <main class="main-content" id="top">
         <header class="topbar">
           <div class="mobile-brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span> mellow<span class="brand-dot">.</span></div>
-          <div class="greeting"><span class="eyebrow" id="today-label">A LITTLE SPACE TO THINK</span><h1>M
+          <div class="greeting"><span class="eyebrow" id="today-label">A LITTLE SPACE TO THINK</span><h1>Make room for <em>focus.</em></h1></div>
+          <div class="top-actions"><div class="streak-pill" title="Completed focus sessions"><span>✳</span><strong id="session-count">0</strong><span class="streak-label">sessions</span></div><button class="icon-button" id="theme-toggle" aria-label="Switch to light mode" title="Switch to light mode"><span id="theme-icon">☼</span></button><button class="icon-button" id="sound-toggle" aria-label="Turn sound on" title="Sound off"><span id="sound-icon">♪</span></button></div>
+        </header>
+
+        <section class="workspace" id="focus" aria-label="Focus timer">
+          <div class="timer-card">
+            <div class="timer-head"><div><span class="eyebrow">YOUR FOCUS ROOM</span><p class="timer-subtitle">One thing at a time. You’ve got this.</p></div><div class="timer-tools"><button class="more-button" id="settings-button" title="Customize timer durations" aria-label="Customize timer durations">⚙</button><button class="more-button" id="reset-button" title="Reset timer" aria-label="Reset timer">↻</button></div></div>
+            <div class="mode-switch" role="tablist" aria-label="Timer mode">
+              <button class="mode-tab selected" data-mode="focus" role="tab" aria-selected="true">Focus <span>25 min</span></button>
+              <button class="mode-tab" data-mode="short" role="tab" aria-selected="false">Short break <span>5 min</span></button>
+              <button class="mode-tab" data-mode="long" role="tab" aria-selected="false">Long break <span>15 min</span></button>
+            </div>
+            <div class="timer-wrap">
+              <svg class="timer-ring" viewBox="0 0 280 280" aria-hidden="true">
+                <circle class="ring-track" cx="140" cy="140" r="128" />
+                <circle class="ring-progress" id="ring-progress" cx="140" cy="140" r="128" />
+              </svg>
+              <div class="timer-display"><div class="timer-time" id="timer-time" role="timer" aria-live="off">25:00</div><div class="timer-state" id="timer-state">READY WHEN YOU ARE</div></div>
+            </div>
+            <div class="timer-controls"><button class="start-button" id="start-button"><span class="play-icon" id="play-icon">▶</span><span id="start-label">Start focus</span></button><button class="skip-button" id="skip-button" aria-label="Skip to next timer">↗</button></div>
+            <div class="timer-footer"><span><span class="tiny-sparkle">✳</span> A gentle nudge, not a race.</span><span id="cycle-label">ROUND 1 OF 4</span></div>
+          </div>
+
+          <aside class="side-column">
+            <section class="task-card" id="tasks" aria-labelledby="task-heading">
+              <div class="card-heading"><div><span class="eyebrow">CLEAR YOUR MIND</span><h2 id="task-heading">Today’s list<span class="heading-period">.</span></h2></div><span class="task-total" id="task-total">0 / 0</span></div>
+              <form class="task-form" id="task-form"><label class="sr-only" for="task-input">Add a task</label><input id="task-input" type="text" maxlength="90" placeholder="What’s on your mind?" autocomplete="off" /><button type="submit" aria-label="Add task">+</button></form>
+              <ul class="task-list" id="task-list" aria-live="polite"></ul>
+              <div class="empty-state" id="empty-state"><span class="empty-icon">✳</span><p>Your list is a blank page.<br />Add one small thing to begin.</p></div>
+              <button class="clear-button" id="clear-completed" hidden>Clear completed</button>
+            </section>
+            <section class="note-card"><span class="note-icon">✦</span><div><span class="eyebrow">A KIND REMINDER</span><p>Rest is part of the work.<br /><strong>Take your breaks.</strong></p></div><div class="note-decoration" aria-hidden="true">✳</div></section>
+            <section class="progress-card"><div class="progress-top"><div><span class="eyebrow">TODAY’S PROGRESS</span><h3>Little by little</h3></div><span class="progress-percent" id="progress-percent">0%</span></div><div class="progress-track"><span id="progress-fill"></span></div><div class="progress-caption"><span id="progress-caption">Your first session is waiting.</span><span id="focus-minutes">0 min</span></div></section>
+          </aside>
+        </section>
+        <footer class="page-footer"><span>Made for the moments you show up.</span><span>mellow<span class="brand-dot">.</span> &nbsp;·&nbsp; Your data never leaves this browser.</span></footer>
+      </main>
+    </div>
+    <dialog class="duration-dialog" id="duration-dialog" aria-labelledby="duration-title">
+      <form id="duration-form">
+        <div class="dialog-heading"><span class="eyebrow">MAKE IT YOURS</span><button class="dialog-close" id="close-settings" type="button" aria-label="Close settings">×</button></div>
+        <h2 id="duration-title">Timer lengths<span class="heading-period">.</span></h2>
+        <p class="dialog-copy">Choose the rhythm that works for you. Set each timer in minutes.</p>
+        <label class="duration-field">Focus session <span class="duration-input-wrap"><input id="focus-duration" type="number" min="1" max="180" required><span>min</span></span></label>
+        <label class="duration-field">Short break <span class="duration-input-wrap"><input id="short-duration" type="number" min="1" max="60" required><span>min</span></span></label>
+        <label class="duration-field">Long break <span class="duration-input-wrap"><input id="long-duration" type="number" min="1" max="60" required><span>min</span></span></label>
+        <div class="dialog-actions"><button class="cancel-button" id="cancel-settings" type="button">Cancel</button><button class="save-button" type="submit">Save durations</button></div>
+      </form>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script>
+(() => {
+  'use strict';
+
+  const DEFAULT_DURATIONS = { focus: 25, short: 5, long: 15 };
+  const CIRCUMFERENCE = 2 * Math.PI * 128;
+  const STORE_KEY = 'mellow-focus-v1';
+  const today = new Date().toLocaleDateString('en-CA');
+  const $ = (selector) => document.querySelector(selector);
+  const els = {
+    timer: $('#timer-time'), state: $('#timer-state'), ring: $('#ring-progress'),
+    start: $('#start-button'), startLabel: $('#start-label'), playIcon: $('#play-icon'),
+    skip: $('#skip-button'), reset: $('#reset-button'), settings: $('#settings-button'),
+    tabs: [...document.querySelectorAll('.mode-tab')], taskForm: $('#task-form'), taskInput: $('#task-input'),
+    taskList: $('#task-list'), empty: $('#empty-state'), taskTotal: $('#task-total'), navCount: $('#nav-task-count'),
+    clear: $('#clear-completed'), sessions: $('#session-count'), minutes: $('#focus-minutes'),
+    progress: $('#progress-fill'), percent: $('#progress-percent'), progressCaption: $('#progress-caption'),
+    cycle: $('#cycle-label'), sound: $('#sound-toggle'), soundIcon: $('#sound-icon'),
+    theme: $('#theme-toggle'), themeIcon: $('#theme-icon'), toast: $('#toast'), today: $('#today-label'),
+    dialog: $('#duration-dialog'), durationForm: $('#duration-form'), focusDuration: $('#focus-duration'),
+    shortDuration: $('#short-duration'), longDuration: $('#long-duration')
+  };
+
+  function safeDuration(value, fallback, max) {
+    const number = Number(value);
+    return Number.isInteger(number) && number >= 1 && number <= max ? number : fallback;
+  }
+  function loadState() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+      const sameDay = stored.date === today;
+      return {
+        date: today,
+        tasks: sameDay && Array.isArray(stored.tasks) ? stored.tasks : [],
+        sessions: sameDay ? Number(stored.sessions) || 0 : 0,
+        minutes: sameDay ? Number(stored.minutes) || 0 : 0,
+        round: sameDay ? Math.min(4, Math.max(1, Number(stored.round) || 1)) : 1,
+        sound: Boolean(stored.sound),
+        theme: stored.theme === 'light' ? 'light' : 'dark',
+        durations: {
+          focus: safeDuration(stored.durations?.focus, DEFAULT_DURATIONS.focus, 180),
+          short: safeDuration(stored.durations?.short, DEFAULT_DURATIONS.short, 60),
+          long: safeDuration(stored.durations?.long, DEFAULT_DURATIONS.long, 60)
+        }
+      };
+    } catch (_) {
+      return { date: today, tasks: [], sessions: 0, minutes: 0, round: 1, sound: false, theme: 'dark', durations: { ...DEFAULT_DURATIONS } };
+    }
+  }
+  const data = loadState();
+  const durations = { focus: data.durations.focus * 60, short: data.durations.short * 60, long: data.durations.long * 60 };
+  let mode = 'focus';
+  let remaining = durations.focus;
+  let interval = null;
+  let toastTimeout;
+  let audioContext;
+
+  function persist() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ ...data, durations: data.durations })); }
+    catch (_) { showToast('Storage is unavailable in this browser.'); }
+  }
+  function formatTime(seconds) {
+    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+  }
+  function renderTimer() {
+    els.timer.textContent = formatTime(remaining);
+    const fraction = remaining / durations[mode];
+    els.ring.style.strokeDasharray = `${CIRCUMFERENCE}`;
+    els.ring.style.strokeDashoffset = `${CIRCUMFERENCE * (1 - fraction)}`;
+    document.title = interval ? `${formatTime(remaining)} — Mellow` : 'Mellow — make room for focus';
+  }
+  function syncDurationLabels() {
+    els.tabs.forEach((tab) => {
+      const label = tab.querySelector('span');
+      label.textContent = `${data.durations[tab.dataset.mode]} min`;
+    });
+  }
+  function setMode(nextMode) {
+    pauseTimer();
+    mode = nextMode;
+    remaining = durations[mode];
+    els.tabs.forEach((tab) => {
+      const selected = tab.dataset.mode === mode;
+      tab.classList.toggle('selected', selected);
+      tab.setAttribute('aria-selected', String(selected));
+    });
+    els.state.textContent = mode === 'focus' ? 'READY WHEN YOU ARE' : 'A MOMENT TO RESET';
+    updateButton();
+    renderTimer();
+  }
+  function updateButton() {
+    const running = Boolean(interval);
+    els.startLabel.textContent = running ? 'Pause focus' : 'Start focus';
+    els.playIcon.textContent = running ? 'Ⅱ' : '▶';
+    els.state.textContent = running ? (mode === 'focus' ? 'YOU’RE IN YOUR FOCUS' : 'TAKE A BREATH') : (mode === 'focus' ? 'READY WHEN YOU ARE' : 'A MOMENT TO RESET');
+    els.start.setAttribute('aria-label', running ? 'Pause timer' : 'Start timer');
+    els.settings.disabled = running;
+    els.settings.title = running ? 'Pause the timer before changing durations' : 'Customize timer durations';
+  }
+  function pauseTimer() {
+    if (interval) window.clearInterval(interval);
+    interval = null;
+    updateButton();
+  }
+  function startTimer() {
+    if (interval) { pauseTimer(); return; }
+    if (remaining <= 0) remaining = durations[mode];
+    interval = window.setInterval(() => {
+      remaining -= 1;
+      renderTimer();
+      if (remaining <= 0) completeTimer();
+    }, 1000);
+    updateButton();
+  }
+  function completeTimer() {
+    pauseTimer();
+    remaining = 0;
+    renderTimer();
+    playChime();
+    if (mode === 'focus') {
+      data.sessions += 1;
+      data.minutes += data.durations.focus;
+      const finishedRound = data.round;
+      const nextMode = finishedRound === 4 ? 'long' : 'short';
+      data.round = finishedRound === 4 ? 1 : finishedRound + 1;
+      persist();
+      renderStats();
+      showToast(finishedRound === 4 ? 'Beautiful work. A longer rest is yours.' : 'Focus session complete. Take a short breather.');
+      setMode(nextMode);
+    } else {
+      showToast('Break complete. Ready when you are.');
+      setMode('focus');
+    }
+  }
+  function playChime() {
+    if (!data.sound) return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      audioContext = audioContext || new AudioCtx();
+      const now = audioContext.currentTime;
+      [523.25, 659.25].forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = 'sine'; oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, now + index * 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.08, now + index * 0.16 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.16 + 0.45);
+        oscillator.connect(gain); gain.connect(audioContext.destination);
+        oscillator.start(now + index * 0.16); oscillator.stop(now + index * 0.16 + 0.48);
+      });
+    } catch (_) { /* Audio is an optional enhancement. */ }
+  }
+  function showToast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add('show');
+    window.clearTimeout(toastTimeout);
+    toastTimeout = window.setTimeout(() => els.toast.classList.remove('show'), 2600);
+  }
+  function renderTasks() {
+    els.taskList.replaceChildren();
+    data.tasks.forEach((task) => {
+      const row = document.createElement('li');
+      row.className = `task-row${task.done ? ' done' : ''}`;
+      const check = document.createElement('input');
+      check.type = 'checkbox'; check.className = 'task-check'; check.checked = Boolean(task.done);
+      check.setAttribute('aria-label', `${task.done ? 'Mark incomplete' : 'Complete'}: ${task.text}`);
+      check.addEventListener('change', () => { task.done = check.checked; persist(); renderTasks(); });
+      const text = document.createElement('span'); text.className = 'task-text'; text.textContent = task.text;
+      const remove = document.createElement('button'); remove.className = 'delete-task'; remove.type = 'button'; remove.textContent = '×';
+      remove.setAttribute('aria-label', `Delete task: ${task.text}`);
+      remove.addEventListener('click', () => { data.tasks = data.tasks.filter((item) => item.id !== task.id); persist(); renderTasks(); });
+      row.append(check, text, remove);
+      els.taskList.append(row);
+    });
+    const done = data.tasks.filter((task) => task.done).length;
+    const remainingTasks = data.tasks.length - done;
+    els.taskTotal.textContent = `${done} / ${data.tasks.length}`;
+    els.navCount.textContent = String(remainingTasks);
+    els.empty.hidden = data.tasks.length > 0;
+    els.clear.hidden = done === 0;
+  }
+  function renderStats() {
+    els.sessions.textContent = String(data.sessions);
+    els.minutes.textContent = `${data.minutes} min`;
+    const percentage = Math.min(100, Math.round((data.sessions / 4) * 100));
+    els.percent.textContent = `${percentage}%`;
+    els.progress.style.width = `${percentage}%`;
+    els.progressCaption.textContent = data.sessions === 0 ? 'Your first session is waiting.' : data.sessions >= 4 ? 'You made space for your focus today.' : `${4 - data.sessions} more ${4 - data.sessions === 1 ? 'session' : 'sessions'} to your daily goal.`;
+    els.cycle.textContent = `ROUND ${data.round} OF 4`;
+  }
+  function applyTheme() {
+    document.documentElement.dataset.theme = data.theme;
+    const light = data.theme === 'light';
+    els.themeIcon.textContent = light ? '☾' : '☼';
+    els.theme.title = light ? 'Switch to dark mode' : 'Switch to light mode';
+    els.theme.setAttribute('aria-label', els.theme.title);
+    document.querySelector('meta[name="theme-color"]').content = light ? '#f4f5ef' : '#111310';
+  }
+  function openSettings() {
+    els.focusDuration.value = data.durations.focus;
+    els.shortDuration.value = data.durations.short;
+    els.longDuration.value = data.durations.long;
+    els.dialog.showModal();
+  }
+
+  els.tabs.forEach((tab) => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+  els.start.addEventListener('click', startTimer);
+  els.reset.addEventListener('click', () => { pauseTimer(); remaining = durations[mode]; renderTimer(); updateButton(); showToast('Timer reset. Begin whenever you’re ready.'); });
+  els.skip.addEventListener('click', () => { pauseTimer(); setMode(mode === 'focus' ? (data.round === 4 ? 'long' : 'short') : 'focus'); showToast('A fresh timer, at your pace.'); });
+  els.settings.addEventListener('click', openSettings);
+  $('#close-settings').addEventListener('click', () => els.dialog.close());
+  $('#cancel-settings').addEventListener('click', () => els.dialog.close());
+  els.dialog.addEventListener('click', (event) => { if (event.target === els.dialog) els.dialog.close(); });
+  els.durationForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!els.durationForm.reportValidity()) return;
+    data.durations = {
+      focus: Number(els.focusDuration.value), short: Number(els.shortDuration.value), long: Number(els.longDuration.value)
+    };
+    Object.keys(durations).forEach((key) => { durations[key] = data.durations[key] * 60; });
+    remaining = durations[mode];
+    persist(); syncDurationLabels(); renderTimer(); updateButton();
+    els.dialog.close();
+    showToast('Your timer lengths have been saved.');
+  });
+  els.taskForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const text = els.taskInput.value.trim();
+    if (!text) { els.taskInput.focus(); return; }
+    data.tasks.unshift({ id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, text, done: false });
+    persist(); renderTasks(); els.taskInput.value = ''; els.taskInput.focus();
+  });
+  els.clear.addEventListener('click', () => { data.tasks = data.tasks.filter((task) => !task.done); persist(); renderTasks(); });
+  els.sound.addEventListener('click', () => {
+    data.sound = !data.sound; persist();
+    els.soundIcon.textContent = data.sound ? '♫' : '♪';
+    els.sound.title = data.sound ? 'Sound on' : 'Sound off';
+    els.sound.setAttribute('aria-label', data.sound ? 'Turn sound off' : 'Turn sound on');
+    showToast(data.sound ? 'Gentle chime enabled.' : 'Sound turned off.');
+  });
+  els.theme.addEventListener('click', () => {
+    data.theme = data.theme === 'dark' ? 'light' : 'dark';
+    persist(); applyTheme();
+    showToast(`${data.theme === 'light' ? 'Light' : 'Dark'} mode enabled.`);
+  });
+  els.today.textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date()).toUpperCase() + ' · A LITTLE SPACE TO THINK';
+  els.soundIcon.textContent = data.sound ? '♫' : '♪';
+  els.sound.title = data.sound ? 'Sound on' : 'Sound off';
+  els.sound.setAttribute('aria-label', data.sound ? 'Turn sound off' : 'Turn sound on');
+  applyTheme(); syncDurationLabels(); renderTasks(); renderStats(); renderTimer(); updateButton();
+})();
+    </script>
+  </body>
+</html>
