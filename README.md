@@ -51,7 +51,7 @@ Contributing
 
 Issues and pull requests are welcome. For larger changes, open an issue first so we can keep the app intentionally small and focused.
 
-*License*
+**License**
 Mellow is released under the MIT License.
 
 
